@@ -1,1 +1,7 @@
-# menko
+Menko is a Japanese game played by 2 or more players, where a player places their card down and the other(s) try to flip it to take it! When a player takes all cards, they win.
+
+This Minecraft mod adds 5 Menko cards. Any player can throw a Menko card to start a game session that others can join in a tiny radius around the owner's card. The owner can then start the game by using the Start item!
+
+Hold to boost your throw, and try to aim well!
+
+![Me and another player playing Menko!](https://cdn.modrinth.com/data/cached_images/964eb5b350b900e5ee96ae80ed5f07de9d596ad3_0.webp)
