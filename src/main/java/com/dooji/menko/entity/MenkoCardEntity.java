@@ -186,7 +186,7 @@ public class MenkoCardEntity extends Entity {
 		}
 
 		if (realMove.distanceToSqr(moveVec) > 0.000001) {
-			Vec3 slowVel = this.getDeltaMovement().multiply(0.18, groundContact ? 0.0 : 0.25, 0.18);
+			Vec3 slowVel = this.getDeltaMovement().multiply(0.44, groundContact ? 0.0 : 0.28, 0.44);
 			this.setDeltaMovement(slowVel);
 			body.collide(this.position(), slowVel, groundContact, fallSpeed);
 		} else {
@@ -410,7 +410,7 @@ public class MenkoCardEntity extends Entity {
 			this.velocity = velocity;
 			this.pitch = pitch;
 			this.roll = 0.0f;
-			this.pitchVelocity = pitch * 0.04f;
+			this.pitchVelocity = pitch * 0.055f;
 			this.rollVelocity = rollVelocity;
 		}
 
@@ -420,24 +420,27 @@ public class MenkoCardEntity extends Entity {
 		}
 
 		private void step(Vec3 position, Vec3 velocity, boolean onGround) {
-			this.sync(position, velocity);
+			this.position = position;
+			this.velocity = velocity;
 
 			if (!onGround) {
-				this.velocity = this.velocity.add(0.0, -0.05, 0.0);
+				this.velocity = this.velocity.add(0.0, -0.05, 0.0).scale(0.988);
+				this.pitchVelocity *= 0.988f;
+				this.rollVelocity *= 0.994f;
 			} else {
-				this.velocity = this.velocity.multiply(0.62, 0.0, 0.62);
+				this.velocity = this.velocity.multiply(0.64, 0.0, 0.64);
+				this.pitchVelocity *= 0.68f;
+				this.rollVelocity *= 0.62f;
 			}
 
 			this.position = this.position.add(this.velocity);
-
 			this.pitch = Mth.wrapDegrees(this.pitch + this.pitchVelocity);
 			this.roll = Mth.wrapDegrees(this.roll + this.rollVelocity);
-			this.pitchVelocity *= onGround ? 0.72f : 0.985f;
-			this.rollVelocity *= onGround ? 0.68f : 0.99f;
 
 			if (onGround) {
-				this.pitch = Mth.approachDegrees(this.pitch, 0.0f, 8.0f);
-				this.roll = Mth.approachDegrees(this.roll, 0.0f, 8.0f);
+				float settle = 4.0f + (float) this.velocity.horizontalDistance() * 14.0f;
+				this.pitch = Mth.approachDegrees(this.pitch, 0.0f, settle);
+				this.roll = Mth.approachDegrees(this.roll, 0.0f, settle);
 				this.pitch = Mth.clamp(this.pitch, -12.0f, 12.0f);
 				this.roll = Mth.clamp(this.roll, -12.0f, 12.0f);
 			}
@@ -445,15 +448,15 @@ public class MenkoCardEntity extends Entity {
 
 		private void collide(Vec3 position, Vec3 velocity, boolean onGround, double impactSpeed) {
 			if (onGround) {
-				this.pitchVelocity *= impactSpeed > 0.08 ? -0.25f : 0.72f;
-				this.rollVelocity *= 0.68f;
-				this.pitch = Mth.approachDegrees(this.pitch, 0.0f, 10.0f);
-				this.roll = Mth.approachDegrees(this.roll, 0.0f, 10.0f);
+				float pitchSin = (float) Math.sin(Math.toRadians(this.pitch));
+				this.pitchVelocity = this.pitchVelocity * -0.32f + (float) (-impactSpeed * pitchSin * 28.0);
+				this.rollVelocity *= 0.65f;
 				this.pitch = Mth.clamp(this.pitch, -12.0f, 12.0f);
 				this.roll = Mth.clamp(this.roll, -12.0f, 12.0f);
 			}
 
-			this.sync(position, velocity);
+			this.position = position;
+			this.velocity = velocity;
 		}
 
 		private Vec3 position() {
