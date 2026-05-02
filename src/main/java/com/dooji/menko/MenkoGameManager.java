@@ -534,6 +534,10 @@ public class MenkoGameManager {
 		return gameId == null ? null : MENKO_GAMES.get(gameId);
 	}
 
+	public static boolean isInSession(UUID playerId) {
+		return PLAYER_MENKO_GAMES.containsKey(playerId);
+	}
+
 	private static void addCards(ServerLevel level, UUID playerId, int count) {
 		if (count <= 0) {
 			return;
