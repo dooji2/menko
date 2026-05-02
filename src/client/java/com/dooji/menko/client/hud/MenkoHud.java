@@ -12,9 +12,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 
 import java.util.List;
@@ -22,13 +25,24 @@ import java.util.List;
 public final class MenkoHud {
 	private static Component message = Component.empty();
 	private static boolean canCharge;
+	private static boolean autoHide;
 	private static long expiresAtMs;
+	private static long peekUntilMs;
+	private static float slideOffset = 116.0f;
+	private static float slideTarget = 116.0f;
 
 	public static void init() {
 		ClientPlayNetworking.registerGlobalReceiver(MenkoHudPayload.TYPE, (payload, context) -> {
+			boolean wasCharge = canCharge;
 			message = payload.message();
 			canCharge = payload.canCharge();
-			expiresAtMs = payload.durationTicks() > 0 ? Util.getMillis() + payload.durationTicks() * 50L : 0L;
+			autoHide = payload.durationTicks() > 0;
+			expiresAtMs = autoHide ? Util.getMillis() + payload.durationTicks() * 50L : 0L;
+			peekUntilMs = message.getString().isBlank() ? 0L : Util.getMillis() + 2000L;
+			slideTarget = 0.0f;
+			if (canCharge && !wasCharge) {
+				Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_PLING, 1.2f));
+			}
 		});
 
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> clear());
@@ -36,27 +50,52 @@ public final class MenkoHud {
 	}
 
 	private static void render(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker) {
+		long now = Util.getMillis();
+		if (expiresAtMs > 0L && now >= expiresAtMs) {
+			expiresAtMs = 0L;
+			peekUntilMs = 0L;
+		}
+
+		Minecraft minecraft = Minecraft.getInstance();
+		if (message == null || message.getString().isBlank()) {
+			slideTarget = 116.0f;
+		} else if (expiresAtMs > 0L) {
+			slideTarget = 0.0f;
+		} else if (autoHide) {
+			slideTarget = 116.0f;
+		} else if (canCharge && isChargingCard(minecraft)) {
+			slideTarget = 0.0f;
+		} else if (now < peekUntilMs) {
+			slideTarget = 0.0f;
+		} else {
+			slideTarget = 108.0f;
+		}
+
+		float delta = (float) deltaTracker.getGameTimeDeltaTicks();
+		slideOffset = Mth.approach(slideOffset, slideTarget, delta * 5.0f);
+
+		if (slideTarget >= 115.5f && slideOffset >= 115.5f) {
+			if (!message.getString().isBlank()) {
+				clear();
+			}
+
+			return;
+		}
+
 		if (message == null || message.getString().isBlank()) {
 			return;
 		}
 
-		if (expiresAtMs > 0L && Util.getMillis() >= expiresAtMs) {
-			clear();
-			return;
-		}
-
-		Minecraft minecraft = Minecraft.getInstance();
 		Font font = minecraft.font;
 		Identifier texture = Identifier.fromNamespaceAndPath(Menko.MOD_ID, "textures/gui/menko_hud.png");
 		Component title = Component.literal("めんこ");
 		int width = minecraft.getWindow().getGuiScaledWidth();
 		int height = minecraft.getWindow().getGuiScaledHeight();
 		int x = (width - 256) / 2;
-		int y = height - 96;
+		int y = height - 116 + (int) slideOffset;
 		int titleX = x + 123 - font.width(title) / 2;
-		int messageWidth = 216;
 		int messageX = x + 123;
-		List<FormattedCharSequence> lines = font.split(message, messageWidth);
+		List<FormattedCharSequence> lines = font.split(message, 216);
 		int lineCount = Math.min(lines.size(), 3);
 		int messageY = y + 36 - (lineCount * font.lineHeight) / 2;
 
@@ -68,8 +107,14 @@ public final class MenkoHud {
 		}
 	}
 
+	private static boolean isChargingCard(Minecraft minecraft) {
+		return minecraft.player != null
+			&& minecraft.player.isUsingItem()
+			&& minecraft.player.getUseItem().getItem() instanceof MenkoCardItem;
+	}
+
 	private static void renderBoostBar(GuiGraphicsExtractor graphics, Minecraft minecraft, int x, int y) {
-		if (!canCharge || minecraft.player == null || !minecraft.player.isUsingItem() || !(minecraft.player.getUseItem().getItem() instanceof MenkoCardItem)) {
+		if (!canCharge || !isChargingCard(minecraft)) {
 			return;
 		}
 
@@ -90,6 +135,10 @@ public final class MenkoHud {
 	private static void clear() {
 		message = Component.empty();
 		canCharge = false;
+		autoHide = false;
 		expiresAtMs = 0L;
+		peekUntilMs = 0L;
+		slideOffset = 116.0f;
+		slideTarget = 116.0f;
 	}
 }
