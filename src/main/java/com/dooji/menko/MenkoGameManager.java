@@ -39,9 +39,9 @@ public class MenkoGameManager {
 
 			MENKO_GAMES.clear();
 			PLAYER_MENKO_GAMES.clear();
-			MenkoHotbars.clear();
 		});
 
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> MenkoHotbars.restore(handler.player));
 		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> leaveSession(handler.player));
 	}
 
