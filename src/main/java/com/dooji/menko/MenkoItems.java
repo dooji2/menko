@@ -23,6 +23,11 @@ public class MenkoItems {
 	private static final Identifier MENKO_MARS_NONFUNC_ID = Identifier.fromNamespaceAndPath(Menko.MOD_ID, "menko_mars_nonfunc");
 	private static final Identifier MENKO_NIGHTSKY_NONFUNC_ID = Identifier.fromNamespaceAndPath(Menko.MOD_ID, "menko_nightsky_nonfunc");
 	private static final Identifier MENKO_SPACE_NONFUNC_ID = Identifier.fromNamespaceAndPath(Menko.MOD_ID, "menko_space_nonfunc");
+	private static final Identifier MENKO_SAKURAFROG_PERSISTENT_ID = Identifier.fromNamespaceAndPath(Menko.MOD_ID, "menko_sakurafrog_persistent");
+	private static final Identifier MENKO_BEACH_PERSISTENT_ID = Identifier.fromNamespaceAndPath(Menko.MOD_ID, "menko_beach_persistent");
+	private static final Identifier MENKO_MARS_PERSISTENT_ID = Identifier.fromNamespaceAndPath(Menko.MOD_ID, "menko_mars_persistent");
+	private static final Identifier MENKO_NIGHTSKY_PERSISTENT_ID = Identifier.fromNamespaceAndPath(Menko.MOD_ID, "menko_nightsky_persistent");
+	private static final Identifier MENKO_SPACE_PERSISTENT_ID = Identifier.fromNamespaceAndPath(Menko.MOD_ID, "menko_space_persistent");
 	private static final Identifier START_ID = Identifier.fromNamespaceAndPath(Menko.MOD_ID, "start");
 	private static final Identifier LEAVE_ID = Identifier.fromNamespaceAndPath(Menko.MOD_ID, "leave");
 	private static final ResourceKey<Item> MENKO_SAKURAFROG_ITEM_KEY = ResourceKey.create(Registries.ITEM, MENKO_SAKURAFROG_ID);
@@ -35,6 +40,11 @@ public class MenkoItems {
 	private static final ResourceKey<Item> MENKO_MARS_NONFUNC_ITEM_KEY = ResourceKey.create(Registries.ITEM, MENKO_MARS_NONFUNC_ID);
 	private static final ResourceKey<Item> MENKO_NIGHTSKY_NONFUNC_ITEM_KEY = ResourceKey.create(Registries.ITEM, MENKO_NIGHTSKY_NONFUNC_ID);
 	private static final ResourceKey<Item> MENKO_SPACE_NONFUNC_ITEM_KEY = ResourceKey.create(Registries.ITEM, MENKO_SPACE_NONFUNC_ID);
+	private static final ResourceKey<Item> MENKO_SAKURAFROG_PERSISTENT_ITEM_KEY = ResourceKey.create(Registries.ITEM, MENKO_SAKURAFROG_PERSISTENT_ID);
+	private static final ResourceKey<Item> MENKO_BEACH_PERSISTENT_ITEM_KEY = ResourceKey.create(Registries.ITEM, MENKO_BEACH_PERSISTENT_ID);
+	private static final ResourceKey<Item> MENKO_MARS_PERSISTENT_ITEM_KEY = ResourceKey.create(Registries.ITEM, MENKO_MARS_PERSISTENT_ID);
+	private static final ResourceKey<Item> MENKO_NIGHTSKY_PERSISTENT_ITEM_KEY = ResourceKey.create(Registries.ITEM, MENKO_NIGHTSKY_PERSISTENT_ID);
+	private static final ResourceKey<Item> MENKO_SPACE_PERSISTENT_ITEM_KEY = ResourceKey.create(Registries.ITEM, MENKO_SPACE_PERSISTENT_ID);
 	private static final ResourceKey<Item> START_ITEM_KEY = ResourceKey.create(Registries.ITEM, START_ID);
 	private static final ResourceKey<Item> LEAVE_ITEM_KEY = ResourceKey.create(Registries.ITEM, LEAVE_ID);
 
@@ -48,10 +58,16 @@ public class MenkoItems {
 	public static final Item MENKO_MARS_NONFUNC = registerItem(MENKO_MARS_NONFUNC_ID, new NonFunctionalMenkoItem(new Item.Properties().setId(MENKO_MARS_NONFUNC_ITEM_KEY).useItemDescriptionPrefix()));
 	public static final Item MENKO_NIGHTSKY_NONFUNC = registerItem(MENKO_NIGHTSKY_NONFUNC_ID, new NonFunctionalMenkoItem(new Item.Properties().setId(MENKO_NIGHTSKY_NONFUNC_ITEM_KEY).useItemDescriptionPrefix()));
 	public static final Item MENKO_SPACE_NONFUNC = registerItem(MENKO_SPACE_NONFUNC_ID, new NonFunctionalMenkoItem(new Item.Properties().setId(MENKO_SPACE_NONFUNC_ITEM_KEY).useItemDescriptionPrefix()));
+	public static final Item MENKO_SAKURAFROG_PERSISTENT = registerItem(MENKO_SAKURAFROG_PERSISTENT_ID, new NonFunctionalMenkoItem(new Item.Properties().setId(MENKO_SAKURAFROG_PERSISTENT_ITEM_KEY).useItemDescriptionPrefix(), 0));
+	public static final Item MENKO_BEACH_PERSISTENT = registerItem(MENKO_BEACH_PERSISTENT_ID, new NonFunctionalMenkoItem(new Item.Properties().setId(MENKO_BEACH_PERSISTENT_ITEM_KEY).useItemDescriptionPrefix(), 0));
+	public static final Item MENKO_MARS_PERSISTENT = registerItem(MENKO_MARS_PERSISTENT_ID, new NonFunctionalMenkoItem(new Item.Properties().setId(MENKO_MARS_PERSISTENT_ITEM_KEY).useItemDescriptionPrefix(), 0));
+	public static final Item MENKO_NIGHTSKY_PERSISTENT = registerItem(MENKO_NIGHTSKY_PERSISTENT_ID, new NonFunctionalMenkoItem(new Item.Properties().setId(MENKO_NIGHTSKY_PERSISTENT_ITEM_KEY).useItemDescriptionPrefix(), 0));
+	public static final Item MENKO_SPACE_PERSISTENT = registerItem(MENKO_SPACE_PERSISTENT_ID, new NonFunctionalMenkoItem(new Item.Properties().setId(MENKO_SPACE_PERSISTENT_ITEM_KEY).useItemDescriptionPrefix(), 0));
 	public static final Item START = registerItem(START_ID, new MenkoStartItem(new Item.Properties().setId(START_ITEM_KEY).stacksTo(1).useItemDescriptionPrefix()));
 	public static final Item LEAVE = registerItem(LEAVE_ID, new MenkoLeaveItem(new Item.Properties().setId(LEAVE_ITEM_KEY).stacksTo(1).useItemDescriptionPrefix()));
 	public static final Item[] MENKO_CARDS = {MENKO_SAKURAFROG, MENKO_BEACH, MENKO_MARS, MENKO_NIGHTSKY, MENKO_SPACE};
 	public static final Item[] NON_FUNCTIONAL_MENKO_CARDS = {MENKO_SAKURAFROG_NONFUNC, MENKO_BEACH_NONFUNC, MENKO_MARS_NONFUNC, MENKO_NIGHTSKY_NONFUNC, MENKO_SPACE_NONFUNC};
+	public static final Item[] PERSISTENT_NON_FUNCTIONAL_MENKO_CARDS = {MENKO_SAKURAFROG_PERSISTENT, MENKO_BEACH_PERSISTENT, MENKO_MARS_PERSISTENT, MENKO_NIGHTSKY_PERSISTENT, MENKO_SPACE_PERSISTENT};
 
 	public static void init() {
 	}

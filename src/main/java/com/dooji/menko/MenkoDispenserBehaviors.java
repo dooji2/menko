@@ -14,7 +14,25 @@ public final class MenkoDispenserBehaviors {
 	}
 
 	public static void init() {
-		DefaultDispenseItemBehavior menkoBehavior = new DefaultDispenseItemBehavior() {
+		DefaultDispenseItemBehavior functionalBehavior = menkoBehavior(false, 0);
+		DefaultDispenseItemBehavior temporaryNonFunctionalBehavior = menkoBehavior(true, 100);
+		DefaultDispenseItemBehavior persistentNonFunctionalBehavior = menkoBehavior(true, 0);
+
+		for (Item item : MenkoItems.MENKO_CARDS) {
+			DispenserBlock.registerBehavior(item, functionalBehavior);
+		}
+
+		for (Item item : MenkoItems.NON_FUNCTIONAL_MENKO_CARDS) {
+			DispenserBlock.registerBehavior(item, temporaryNonFunctionalBehavior);
+		}
+
+		for (Item item : MenkoItems.PERSISTENT_NON_FUNCTIONAL_MENKO_CARDS) {
+			DispenserBlock.registerBehavior(item, persistentNonFunctionalBehavior);
+		}
+	}
+
+	private static DefaultDispenseItemBehavior menkoBehavior(boolean nonFunctional, int despawnTicks) {
+		return new DefaultDispenseItemBehavior() {
 			@Override
 			protected ItemStack execute(BlockSource source, ItemStack stack) {
 				Item item = stack.getItem();
@@ -25,30 +43,16 @@ public final class MenkoDispenserBehaviors {
 				card.setGameId(null);
 				card.setInGame(false);
 				card.setTurnCard(false);
-				boolean nonFunctional = false;
-				for (Item candidate : MenkoItems.NON_FUNCTIONAL_MENKO_CARDS) {
-					if (candidate == item) {
-						nonFunctional = true;
-						break;
-					}
-				}
 				card.setNonFunctional(nonFunctional);
-				if (nonFunctional) {
-					card.setDespawnTicks(100);
+				if (despawnTicks > 0) {
+					card.setDespawnTicks(despawnTicks);
 				}
+
 				card.throwFromDispenser(spawnPos, direction, 0.55f);
 				source.level().addFreshEntity(card);
 				stack.shrink(1);
 				return stack;
 			}
 		};
-
-		for (Item item : MenkoItems.MENKO_CARDS) {
-			DispenserBlock.registerBehavior(item, menkoBehavior);
-		}
-
-		for (Item item : MenkoItems.NON_FUNCTIONAL_MENKO_CARDS) {
-			DispenserBlock.registerBehavior(item, menkoBehavior);
-		}
 	}
 }

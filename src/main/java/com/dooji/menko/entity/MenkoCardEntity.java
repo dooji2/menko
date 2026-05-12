@@ -133,8 +133,7 @@ public class MenkoCardEntity extends Entity {
 		this.rollOld = this.roll;
 
 		if (this.level().isClientSide()) {
-			this.roll = this.entityData.get(ROLL);
-			this.updateBounds();
+			this.tickClientVisualPhysics();
 			return;
 		}
 
@@ -219,6 +218,56 @@ public class MenkoCardEntity extends Entity {
 		if (!this.nonFunctional && !wasLanded && this.hasLanded() && this.capturedTicks <= 0 && this.level() instanceof ServerLevel serverLevel) {
 			MenkoGameManager.onCardLanded(serverLevel, this);
 		}
+	}
+
+	private void tickClientVisualPhysics() {
+		if (this.hasLanded()) {
+			this.roll = this.entityData.get(ROLL);
+			this.updateBounds();
+			return;
+		}
+
+		CardBody body = this.ensurePhysics();
+		float syncedRoll = this.entityData.get(ROLL);
+		if (body.needsSync(this.position()) || body.velocity().distanceToSqr(this.getDeltaMovement()) > 0.0025) {
+			body.rebase(
+				this.position(),
+				this.getDeltaMovement(),
+				this.getXRot(),
+				syncedRoll,
+				Mth.wrapDegrees(this.getXRot() - this.xRotO),
+				Mth.wrapDegrees(syncedRoll - this.rollOld)
+			);
+			this.roll = syncedRoll;
+		}
+
+		Vec3 prevPos = this.position();
+		boolean wasOnGround = this.onGround();
+		double fallSpeed = Math.max(0.0, -this.getDeltaMovement().y);
+		body.step(prevPos, this.getDeltaMovement(), this.onGround());
+		Vec3 moveVec = body.position().subtract(prevPos);
+		this.setDeltaMovement(body.velocity());
+		this.move(MoverType.SELF, moveVec);
+		Vec3 realMove = this.position().subtract(prevPos);
+		boolean blockedDownward = moveVec.y < 0.0 && realMove.y > moveVec.y + 0.000001;
+		boolean groundContact = this.onGround() || blockedDownward;
+		if (realMove.distanceToSqr(moveVec) > 0.000001) {
+			Vec3 slowVel = this.getDeltaMovement().multiply(0.44, groundContact ? 0.0 : 0.28, 0.44);
+			this.setDeltaMovement(slowVel);
+			body.collide(this.position(), slowVel, groundContact, fallSpeed);
+		} else {
+			body.sync(this.position(), this.getDeltaMovement());
+		}
+
+		this.setYRot(Mth.wrapDegrees(this.getYRot() + (float) (this.getDeltaMovement().horizontalDistance() * 24.0)));
+		this.setXRot(body.pitch());
+		this.roll = body.roll();
+
+		if (!wasOnGround && groundContact) {
+			this.roll = syncedRoll;
+		}
+
+		this.updateBounds();
 	}
 
 	@Override
@@ -437,9 +486,22 @@ public class MenkoCardEntity extends Entity {
 			this.rollVelocity = rollVelocity;
 		}
 
+		private void rebase(Vec3 position, Vec3 velocity, float pitch, float roll, float pitchVelocity, float rollVelocity) {
+			this.position = position;
+			this.velocity = velocity;
+			this.pitch = pitch;
+			this.roll = roll;
+			this.pitchVelocity = pitchVelocity;
+			this.rollVelocity = rollVelocity;
+		}
+
 		private void sync(Vec3 position, Vec3 velocity) {
 			this.position = position;
 			this.velocity = velocity;
+		}
+
+		private boolean needsSync(Vec3 position) {
+			return this.position.distanceToSqr(position) > 0.01;
 		}
 
 		private void step(Vec3 position, Vec3 velocity, boolean onGround) {

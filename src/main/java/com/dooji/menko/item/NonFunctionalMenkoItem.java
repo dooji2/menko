@@ -15,8 +15,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class NonFunctionalMenkoItem extends Item {
+	private final int despawnTicks;
+
 	public NonFunctionalMenkoItem(Properties properties) {
+		this(properties, 100);
+	}
+
+	public NonFunctionalMenkoItem(Properties properties, int despawnTicks) {
 		super(properties);
+		this.despawnTicks = despawnTicks;
 	}
 
 	@Override
@@ -52,7 +59,9 @@ public class NonFunctionalMenkoItem extends Item {
 		card.setInGame(false);
 		card.setTurnCard(false);
 		card.setNonFunctional(true);
-		card.setDespawnTicks(100);
+		if (this.despawnTicks > 0) {
+			card.setDespawnTicks(this.despawnTicks);
+		}
 		card.throwFrom(player, MenkoCardItem.getChargeForUseTicks(this.getUseDuration(stack, player) - remainingUseTicks));
 		serverLevel.addFreshEntity(card);
 		if (!player.getAbilities().instabuild) {

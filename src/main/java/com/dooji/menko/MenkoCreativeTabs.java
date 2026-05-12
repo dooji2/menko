@@ -30,6 +30,11 @@ class MenkoCreativeTabs {
 					output.accept(MenkoItems.MENKO_BEACH_NONFUNC);
 					output.accept(MenkoItems.MENKO_MARS_NONFUNC);
 					output.accept(MenkoItems.MENKO_SPACE_NONFUNC);
+					output.accept(MenkoItems.MENKO_NIGHTSKY_PERSISTENT);
+					output.accept(MenkoItems.MENKO_SAKURAFROG_PERSISTENT);
+					output.accept(MenkoItems.MENKO_BEACH_PERSISTENT);
+					output.accept(MenkoItems.MENKO_MARS_PERSISTENT);
+					output.accept(MenkoItems.MENKO_SPACE_PERSISTENT);
 				})
 				.build()
 		);
