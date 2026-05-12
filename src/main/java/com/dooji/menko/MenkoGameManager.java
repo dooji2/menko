@@ -76,6 +76,8 @@ public class MenkoGameManager {
 		card.setGameId(game.id);
 		card.setInGame(true);
 		card.setTurnCard(true);
+		game.pendingTurnCardId = card.getUUID();
+		clearTurnReminder(game);
 		card.throwFrom(player, charge);
 		sendHud(level, player.getUUID(), Component.translatable("hud.menko.throwing_card"), 0);
 		return card;
@@ -103,6 +105,13 @@ public class MenkoGameManager {
 		if (!game.isTurn(player.getUUID())) {
 			if (showHud) {
 				sendHud(level, player.getUUID(), Component.translatable("hud.menko.not_your_turn"), 0);
+			}
+			return null;
+		}
+
+		if (game.pendingTurnCardId != null) {
+			if (showHud) {
+				sendHud(level, player.getUUID(), Component.translatable("hud.menko.throwing_card"), 0);
 			}
 			return null;
 		}
@@ -172,6 +181,8 @@ public class MenkoGameManager {
 			}
 
 			recountCards(level, game);
+			recoverPendingTurn(level, game);
+			tickTurnReminder(level, game);
 			if (game.activePlayers() <= 1) {
 				endMenko(level, game, false);
 				iterator.remove();
@@ -240,12 +251,17 @@ public class MenkoGameManager {
 		}
 
 		if (card.position().distanceToSqr(game.center) > RADIUS * RADIUS) {
+			clearPendingTurnCard(game, card.getUUID());
 			card.discard();
 			addCards(level, thrower.id, 1);
+			sendHud(level, thrower.id, Component.translatable("hud.menko.throw_closer"), 60);
+			game.turnReminderPlayerId = thrower.id;
+			game.turnReminderTicks = 60;
 			return;
 		}
 
 		int captured = card.getCapturedCards();
+		clearPendingTurnCard(game, card.getUUID());
 		if (captured > 0) {
 			card.discard();
 			addCards(level, thrower.id, captured + 1);
@@ -338,6 +354,8 @@ public class MenkoGameManager {
 		game.started = true;
 		Collections.shuffle(game.players);
 		game.fieldCards.clear();
+		clearPendingTurnCard(game, null);
+		clearTurnReminder(game);
 		game.turn = 0;
 		for (MenkoPlayer player : game.players) {
 			if (player.left) {
@@ -376,6 +394,8 @@ public class MenkoGameManager {
 	}
 
 	private static void nextPlayer(ServerLevel level, MenkoGame game) {
+		clearPendingTurnCard(game, null);
+		clearTurnReminder(game);
 		for (int i = 0; i < game.players.size(); i++) {
 			game.turn = (game.turn + 1) % game.players.size();
 			MenkoPlayer player = game.players.get(game.turn);
@@ -462,6 +482,15 @@ public class MenkoGameManager {
 		}
 
 		boolean wasTurn = game.started && game.isTurn(playerId);
+		if (playerId.equals(game.turnReminderPlayerId)) {
+			clearTurnReminder(game);
+		}
+		if (game.pendingTurnCardId != null) {
+			MenkoCardEntity pendingCard = (MenkoCardEntity) level.getEntity(game.pendingTurnCardId);
+			if (pendingCard == null || playerId.equals(pendingCard.getOwnerId())) {
+				clearPendingTurnCard(game, game.pendingTurnCardId);
+			}
+		}
 
 		player.left = true;
 		PLAYER_MENKO_GAMES.remove(playerId);
@@ -630,10 +659,54 @@ public class MenkoGameManager {
 			boolean canCharge = true;
 			if (game != null && game.dimension.equals(level.dimension())) {
 				MenkoPlayer data = game.getPlayer(playerId);
-				canCharge = game.started && game.isTurn(playerId) && data != null && !data.left && data.cards > 0;
+				canCharge = game.started && game.isTurn(playerId) && game.pendingTurnCardId == null && data != null && !data.left && data.cards > 0;
 			}
 
 			ServerPlayNetworking.send(player, new MenkoHudPayload(text, durationTicks, canCharge));
+		}
+	}
+
+	private static void recoverPendingTurn(ServerLevel level, MenkoGame game) {
+		if (game.pendingTurnCardId == null) {
+			return;
+		}
+
+		MenkoCardEntity pendingCard = (MenkoCardEntity) level.getEntity(game.pendingTurnCardId);
+		if (pendingCard != null && !pendingCard.isRemoved()) {
+			return;
+		}
+
+		clearPendingTurnCard(game, game.pendingTurnCardId);
+		if (game.activePlayers() > 1) {
+			announceTurn(level, game);
+		}
+	}
+
+	private static void tickTurnReminder(ServerLevel level, MenkoGame game) {
+		if (game.turnReminderTicks <= 0 || game.turnReminderPlayerId == null) {
+			return;
+		}
+
+		game.turnReminderTicks--;
+		if (game.turnReminderTicks > 0) {
+			return;
+		}
+
+		UUID reminderPlayerId = game.turnReminderPlayerId;
+		clearTurnReminder(game);
+		if (game.isTurn(reminderPlayerId) && game.pendingTurnCardId == null) {
+			announceTurn(level, game);
+		}
+	}
+
+	private static void clearTurnReminder(MenkoGame game) {
+		game.turnReminderPlayerId = null;
+		game.turnReminderTicks = 0;
+	}
+
+	private static void clearPendingTurnCard(MenkoGame game, UUID cardId) {
+		if (cardId == null || cardId.equals(game.pendingTurnCardId)) {
+			game.pendingTurnCardId = null;
 		}
 	}
 
@@ -649,7 +722,10 @@ public class MenkoGameManager {
 		private final List<MenkoPlayer> players = new ArrayList<>();
 		private final List<UUID> fieldCards = new ArrayList<>();
 		private UUID ownerId;
+		private UUID pendingTurnCardId;
+		private UUID turnReminderPlayerId;
 		private int turn;
+		private int turnReminderTicks;
 		private boolean started;
 
 		private MenkoGame(ResourceKey<Level> dimension, Vec3 center, UUID ownerId) {

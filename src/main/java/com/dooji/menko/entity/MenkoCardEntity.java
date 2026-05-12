@@ -20,6 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Direction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -96,24 +97,26 @@ public class MenkoCardEntity extends Entity {
 		}
 
 		Vec3 velocity = throwDir.scale(0.2 + charge);
+		initThrow(spawnPos, velocity, player.getYRot(), player.getXRot(), (player.getRandom().nextFloat() - 0.5f) * (4.0f + charge * 20.0f));
+	}
 
-		this.setPos(spawnPos);
-		this.setYRot(player.getYRot());
-		this.setXRot(player.getXRot());
-		this.setOldPos();
-		this.setOldRot();
-		this.setDeltaMovement(velocity);
-		this.roll = 0.0f;
-		this.rollOld = 0.0f;
-		this.stillTicks = 0;
-		this.maxImpactSpeed = 0.0;
-		this.maxImpactTilt = 0.0;
-		this.impactResolved = false;
-		this.capturedCards = 0;
-		this.entityData.set(ROLL, this.roll);
-		this.entityData.set(LANDED, false);
-		this.updateBounds();
-		this.ensurePhysics().launch(this.position(), velocity, player.getXRot(), (player.getRandom().nextFloat() - 0.5f) * (4.0f + charge * 20.0f));
+	public void throwFromDispenser(Vec3 spawnPos, Direction direction, float speed) {
+		Vec3 velocity = direction.getUnitVec3().normalize().scale(speed);
+		float yRot = switch (direction) {
+			case NORTH -> 180.0f;
+			case SOUTH -> 0.0f;
+			case WEST -> 90.0f;
+			case EAST -> -90.0f;
+			default -> this.getYRot();
+		};
+
+		float xRot = switch (direction) {
+			case UP -> -90.0f;
+			case DOWN -> 90.0f;
+			default -> 0.0f;
+		};
+
+		initThrow(spawnPos, velocity, yRot, xRot, 0.0f);
 	}
 
 	@Override
@@ -383,6 +386,26 @@ public class MenkoCardEntity extends Entity {
 
 	private void updateBounds() {
 		this.setBoundingBox(this.makeBoundingBox());
+	}
+
+	private void initThrow(Vec3 spawnPos, Vec3 velocity, float yRot, float xRot, float rollVelocity) {
+		this.setPos(spawnPos);
+		this.setYRot(yRot);
+		this.setXRot(xRot);
+		this.setOldPos();
+		this.setOldRot();
+		this.setDeltaMovement(velocity);
+		this.roll = 0.0f;
+		this.rollOld = 0.0f;
+		this.stillTicks = 0;
+		this.maxImpactSpeed = 0.0;
+		this.maxImpactTilt = 0.0;
+		this.impactResolved = false;
+		this.capturedCards = 0;
+		this.entityData.set(ROLL, this.roll);
+		this.entityData.set(LANDED, false);
+		this.updateBounds();
+		this.ensurePhysics().launch(this.position(), velocity, xRot, rollVelocity);
 	}
 
 	private boolean hasGroundSupport() {

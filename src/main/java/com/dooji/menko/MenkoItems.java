@@ -51,6 +51,7 @@ public class MenkoItems {
 	public static final Item START = registerItem(START_ID, new MenkoStartItem(new Item.Properties().setId(START_ITEM_KEY).stacksTo(1).useItemDescriptionPrefix()));
 	public static final Item LEAVE = registerItem(LEAVE_ID, new MenkoLeaveItem(new Item.Properties().setId(LEAVE_ITEM_KEY).stacksTo(1).useItemDescriptionPrefix()));
 	public static final Item[] MENKO_CARDS = {MENKO_SAKURAFROG, MENKO_BEACH, MENKO_MARS, MENKO_NIGHTSKY, MENKO_SPACE};
+	public static final Item[] NON_FUNCTIONAL_MENKO_CARDS = {MENKO_SAKURAFROG_NONFUNC, MENKO_BEACH_NONFUNC, MENKO_MARS_NONFUNC, MENKO_NIGHTSKY_NONFUNC, MENKO_SPACE_NONFUNC};
 
 	public static void init() {
 	}

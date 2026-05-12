@@ -12,6 +12,7 @@ public class Menko implements ModInitializer {
 		PayloadTypeRegistry.clientboundPlay().register(MenkoHudPayload.TYPE, MenkoHudPayload.CODEC);
 		MenkoItems.init();
 		MenkoEntityTypes.init();
+		MenkoDispenserBehaviors.init();
 		MenkoCreativeTabs.init();
 		MenkoGameManager.init();
 	}

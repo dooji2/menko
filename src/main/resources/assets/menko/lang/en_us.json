@@ -23,6 +23,7 @@
 	"hud.menko.player_flipped": "%s flipped %s Menko.",
 	"hud.menko.got_cards": "You got some cards!",
 	"hud.menko.started": "Menko started. Flip cards in the game's radius.",
+	"hud.menko.throw_closer": "Throw closer to the initial area!",
 	"hud.menko.you_are_out": "You're out :(",
 	"hud.menko.player_out": "%s is out.",
 	"hud.menko.you_left": "You left the game.",
