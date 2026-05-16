@@ -104,6 +104,15 @@ final class MenkoHotbars {
 		sync(player);
 	}
 
+	static void giveCard(ServerPlayer player, Item item) {
+		addCard(player, item);
+		if (player.getInventory().getItem(player.getInventory().getSelectedSlot()).isEmpty()) {
+			player.getInventory().setSelectedSlot(firstCardSlot(player));
+		}
+
+		sync(player);
+	}
+
 	private static void clearRestOfHotbar(ServerPlayer player) {
 		for (int slot = 1; slot < 9; slot++) {
 			player.getInventory().setItem(slot, ItemStack.EMPTY);

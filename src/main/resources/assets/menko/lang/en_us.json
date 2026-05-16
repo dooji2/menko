@@ -16,6 +16,7 @@
 	"item.menko.menko_space_persistent": "Menko (Space, Persistent Non-functional)",
 	"item.menko.start": "Start Match",
 	"item.menko.leave": "Leave Match",
+	"entity.menko.menko_card": "Menko Card",
 	"itemGroup.menko.menko": "Menko",
 	"hud.menko.throwing_card": "Throwing card...",
 	"hud.menko.use_start_or_leave": "Use the Start or Leave cards.",

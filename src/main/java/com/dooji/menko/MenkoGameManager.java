@@ -12,6 +12,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -252,8 +253,9 @@ public class MenkoGameManager {
 
 		if (card.position().distanceToSqr(game.center) > RADIUS * RADIUS) {
 			clearPendingTurnCard(game, card.getUUID());
+			Item thrownItem = card.getCardItem();
 			card.discard();
-			addCards(level, thrower.id, 1);
+			addCard(level, thrower.id, thrownItem);
 			sendHud(level, thrower.id, Component.translatable("hud.menko.throw_closer"), 60);
 			game.turnReminderPlayerId = thrower.id;
 			game.turnReminderTicks = 60;
@@ -286,6 +288,10 @@ public class MenkoGameManager {
 	public static int resolveImpact(ServerLevel level, MenkoCardEntity thrown, double impactSpeed, double impactTilt) {
 		MenkoGame game = MENKO_GAMES.get(thrown.getGameId());
 		if (game == null || !game.started) {
+			return 0;
+		}
+
+		if (thrown.position().distanceToSqr(game.center) > RADIUS * RADIUS) {
 			return 0;
 		}
 
@@ -591,6 +597,29 @@ public class MenkoGameManager {
 		ServerPlayer player = level.getServer().getPlayerList().getPlayer(playerId);
 		if (player != null) {
 			MenkoHotbars.showGame(player, data.cards);
+		}
+	}
+
+	private static void addCard(ServerLevel level, UUID playerId, Item item) {
+		MenkoGame game = getPlayerGame(playerId);
+		if (game == null || !game.started) {
+			ServerPlayer player = level.getServer().getPlayerList().getPlayer(playerId);
+			if (player != null) {
+				MenkoHotbars.giveCard(player, item);
+			}
+
+			return;
+		}
+
+		MenkoPlayer data = game.getPlayer(playerId);
+		if (data == null || data.left) {
+			return;
+		}
+
+		data.cards++;
+		ServerPlayer player = level.getServer().getPlayerList().getPlayer(playerId);
+		if (player != null) {
+			MenkoHotbars.giveCard(player, item);
 		}
 	}
 
